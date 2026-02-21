@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ULTIMATE CTF v6</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap');
+:root{--g:#00ff41;--r:#ff4444;--gold:#ffd700}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:var(--g);font-family:'Share Tech Mono',monospace;min-height:100vh;overflow-x:hidden}
+canvas{position:fixed;top:0;left:0;z-index:0;pointer-events:none}
+.pg{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:20px}
+h1{font-family:'Orbitron',sans-serif;font-size:clamp(1.4em,5vw,2.7em);text-shadow:0 0 30px var(--g);animation:fl 4s infinite}
+@keyframes fl{0%,100%{opacity:1}93%{opacity:.55}95%{opacity:1}98%{opacity:.65}99%{opacity:1}}
+.card{background:rgba(0,255,65,.04);border:1px solid rgba(0,255,65,.17);border-radius:12px;padding:22px;margin:13px 0}
+input[type=text],input[type=password]{width:100%;padding:13px 15px;margin:6px 0;background:rgba(0,0,0,.95);border:1.5px solid rgba(0,255,65,.28);border-radius:9px;color:var(--g);font-family:inherit;font-size:15px;outline:none;transition:.25s}
+input[type=text]:focus,input[type=password]:focus{border-color:var(--g);box-shadow:0 0 12px rgba(0,255,65,.22)}
+.btn{width:100%;padding:14px;margin-top:9px;background:var(--g);border:none;border-radius:9px;color:#000;font-family:'Orbitron',sans-serif;font-size:13px;font-weight:900;letter-spacing:2px;cursor:pointer;transition:.2s}
+.btn:hover{background:#00cc33;transform:translateY(-2px);box-shadow:0 5px 18px rgba(0,255,65,.3)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+#res{min-height:76px;padding:18px;border:2px solid rgba(0,255,65,.1);border-radius:11px;text-align:center;font-size:16px;transition:.3s;color:#222}
+.bw{height:9px;background:#0a0a0a;border-radius:5px;margin:11px 0;overflow:hidden}
+.bf{height:100%;width:0;background:linear-gradient(90deg,#f44,var(--gold),var(--g));border-radius:5px;transition:width 1s ease}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{padding:8px 7px;text-align:left;border-bottom:1px solid rgba(0,255,65,.18);font-size:10px;text-transform:uppercase;letter-spacing:1px;opacity:.5}
+td{padding:8px 7px;border-bottom:1px solid rgba(0,255,65,.06)}
+tr:hover td{background:rgba(0,255,65,.03)}
+.ck{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold}
+.CLEAN,.LOW{color:var(--g);border:1px solid var(--g)}
+.MEDIUM{color:#fa0;border:1px solid #fa0}
+.HIGH{color:#f60;border:1px solid #f60}
+.CRITICAL{color:var(--r);border:1px solid var(--r)}
+.fc{display:inline-block;margin:2px;padding:2px 7px;background:rgba(255,68,68,.1);color:#f99;border:1px solid rgba(255,68,68,.22);border-radius:4px;font-size:11px}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--g);margin-right:5px;animation:bk 1s infinite}
+@keyframes bk{0%,100%{opacity:1}50%{opacity:.1}}
+.sc{max-height:330px;overflow-y:auto}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="pg">
+  <div style="text-align:center;padding:34px 0 16px">
+    <h1>⚡ ULTIMATE CTF v6.0</h1>
+    <p style="opacity:.3;font-size:12px;margin-top:7px">Threat Intel · Password Scoring · Live Leaderboard</p>
+  </div>
+  <div class="card">
+    <input id="nm" type="text"     placeholder="👤 Hacker Alias" maxlength="30" autocomplete="off">
+    <input id="pw" type="password" placeholder="🔑 Password to Analyze" autocomplete="new-password">
+    <button class="btn" id="sb">🚀 ANALYZE PASSWORD</button>
+  </div>
+  <div class="card">
+    <div id="res">Submit a password above to see your score...</div>
+    <div class="bw"><div class="bf" id="bf"></div></div>
+    <div id="fl" style="margin-top:5px;font-size:12px"></div>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:13px;font-size:12px;text-transform:uppercase;letter-spacing:1px">
+      <span class="dot"></span>Live Leaderboard
+    </h3>
+    <div class="sc">
+      <table>
+        <thead><tr><th>#</th><th>Name</th><th>Score</th><th>Rank</th><th>Crack</th><th>Geo</th><th>Risk</th></tr></thead>
+        <tbody id="lb"><tr><td colspan="7" style="text-align:center;opacity:.3;padding:16px">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <p style="text-align:center;opacity:.15;font-size:11px;padding:12px 0">
+    <a href="/admin" style="color:var(--g);text-decoration:none">Admin</a>
+  </p>
+</div>
+<script>
+(function(){
+  var cv=document.getElementById('c'),cx=cv.getContext('2d');
+  function rs(){cv.width=innerWidth;cv.height=innerHeight;}rs();window.onresize=rs;
+  var CH='01アイウカキクケコサシスタチ',dr=[];
+  function id(){dr=Array(Math.floor(innerWidth/13)).fill(1);}id();window.addEventListener('resize',id);
+  setInterval(function(){
+    cx.fillStyle='rgba(0,0,0,.05)';cx.fillRect(0,0,cv.width,cv.height);
+    cx.fillStyle='#00ff41';cx.font='13px monospace';
+    dr.forEach(function(y,i){
+      cx.fillText(CH[Math.floor(Math.random()*CH.length)],i*13,y*13);
+      if(y*13>cv.height&&Math.random()>.975)dr[i]=0;
+      dr[i]++;
+    });
+  },50);
+  function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function setRes(h,col){var el=document.getElementById('res');el.innerHTML=h;el.style.borderColor=col;el.style.color=col;}
+  function go(){
+    var name=document.getElementById('nm').value.trim();
+    var pw=document.getElementById('pw').value;
+    if(!name){setRes('⚠️ Enter a hacker alias','#f44');return;}
+    if(!pw){setRes('⚠️ Enter a password','#f44');return;}
+    var btn=document.getElementById('sb');
+    btn.disabled=true;btn.textContent='⏳ ANALYZING...';
+    fetch('/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,password:pw})})
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(!d.ok){setRes('❌ '+(d.error||'Error'),'#f44');}
+        else{
+          document.getElementById('bf').style.width=Math.round(d.score/10)+'%';
+          var el=document.getElementById('res');
+          el.style.borderColor=d.color;el.style.color='var(--g)';
+          el.innerHTML='<div style="font-size:1.8em;margin-bottom:5px">'+esc(d.rank)+'</div>'
+            +'<div>Score: <strong style="color:'+d.color+';font-size:1.4em">'+d.score+'</strong> / 1000</div>'
+            +'<div style="opacity:.55;font-size:.8em;margin-top:5px">Crack: '+esc(d.crack)
+            +(d.details&&d.details.entropy?' · Entropy: '+d.details.entropy+' bits':'')
+            +(d.details&&d.details.words?' · Passphrase: '+d.details.words+' words':'')+'</div>';
+          var fl=document.getElementById('fl');
+          if(d.flags&&d.flags.length)
+            fl.innerHTML='⚠️ '+d.flags.map(function(f){return'<span class="fc">'+esc(f)+'</span>';}).join('');
+          else
+            fl.innerHTML='<span style="color:var(--g)">✅ No weak patterns</span>';
+          loadLB();
+        }
+        btn.disabled=false;btn.textContent='🚀 ANALYZE PASSWORD';
+      })
+      .catch(function(e){setRes('❌ Network error','#f44');btn.disabled=false;btn.textContent='🚀 ANALYZE PASSWORD';});
+  }
+  function loadLB(){
+    fetch('/api/leaderboard').then(function(r){return r.json();}).then(function(d){
+      if(!d.ok||!d.rows)return;
+      var g=['#ffd700','#c0c0c0','#cd7f32'];
+      document.getElementById('lb').innerHTML=d.rows.length
+        ?d.rows.map(function(r,i){return'<tr>'
+            +'<td style="color:'+(g[i]||'#444')+'">'+(i+1)+'</td>'
+            +'<td><strong>'+esc(r.name)+'</strong></td>'
+            +'<td style="color:#00ff41;font-weight:bold">'+r.score+'</td>'
+            +'<td style="font-size:11px">'+esc(r.rank)+'</td>'
+            +'<td style="opacity:.6">'+esc(r.crack)+'</td>'
+            +'<td style="opacity:.45">'+esc(r.geo)+'</td>'
+            +'<td><span class="ck '+(r.risk||'LOW')+'">'+esc(r.risk||'?')+'</span></td>'
+            +'</tr>';}).join('')
+        :'<tr><td colspan="7" style="text-align:center;opacity:.3;padding:16px">No submissions yet</td></tr>';
+    }).catch(function(){});
+  }
+  document.getElementById('sb').addEventListener('click',go);
+  document.getElementById('nm').addEventListener('keydown',function(e){if(e.key==='Enter')go();});
+  document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go();});
+  function wsc(){
+    try{
+      var ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
+      ws.onmessage=function(e){try{var d=JSON.parse(e.data);if(d.type==='submission')loadLB();}catch(x){}};
+      ws.onclose=function(){setTimeout(wsc,3000);};
+    }catch(x){}
+  }
+  loadLB();
+  setInterval(loadLB,5000);
+  wsc();
+})();
+</script>
+</body>
+</html>

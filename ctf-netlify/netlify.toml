@@ -1,0 +1,48 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/submit"
+  to = "/.netlify/functions/submit"
+  status = 200
+
+[[redirects]]
+  from = "/api/leaderboard"
+  to = "/.netlify/functions/leaderboard"
+  status = 200
+
+[[redirects]]
+  from = "/api/admin/data"
+  to = "/.netlify/functions/admin-data"
+  status = 200
+
+[[redirects]]
+  from = "/api/admin/ban"
+  to = "/.netlify/functions/admin-ban"
+  status = 200
+
+[[redirects]]
+  from = "/api/admin/unban"
+  to = "/.netlify/functions/admin-unban"
+  status = 200
+
+[[redirects]]
+  from = "/api/admin/delete"
+  to = "/.netlify/functions/admin-delete"
+  status = 200
+
+[[redirects]]
+  from = "/flag1"
+  to = "/.netlify/functions/flag1"
+  status = 200
+
+[[redirects]]
+  from = "/flag2"
+  to = "/.netlify/functions/flag2"
+  status = 200
+
+[[redirects]]
+  from = "/admin"
+  to = "/admin.html"
+  status = 200
